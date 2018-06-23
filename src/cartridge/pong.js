@@ -62,9 +62,15 @@ export default class Render {
     this.controls.minDistance = 0;
 
     // Set AmbientLight //
-    this.ambient = new THREE.AmbientLight(0xFFFFFF);
-    this.ambient.position.set(0, 0, 0);
-    this.scene.add(this.ambient);
+    let pointLight = new THREE.PointLight(0xDDDDDD);
+    pointLight.position.set(12, 6, -12);
+    this.scene.add(pointLight);
+    pointLight = new THREE.PointLight(0xEEEEEE);
+    pointLight.position.set(-12, 15, -12);
+    this.scene.add(pointLight);
+    let ambient = new THREE.AmbientLight(0x9f9f9f);
+    ambient.position.set(0, 25, -8);
+    this.scene.add(ambient);
 
     // Skybox //
     const urls = [xpos, xneg, ypos, yneg, zpos, zneg];
@@ -92,11 +98,13 @@ export default class Render {
 
   holoDeck = () => {
     let geometry = new THREE.BoxGeometry(6, .2, 6, 6, 1, 6);
+    let material = new THREE.MeshPhongMaterial(
+      { color:0xFFFFFF, wireframe: isWire }
+    );
+    let isWire = true;
     let floor = new THREE.Mesh(
       geometry,
-      new THREE.MeshPhongMaterial(
-        { color:0xFFFFFF, wireframe: true }
-      )
+      material
     );
     floor.position.set(0, -3.5, 0);
     this.scene.add(floor);
@@ -104,9 +112,7 @@ export default class Render {
     geometry = new THREE.BoxGeometry(6, 6, .2, 6, 6, 1);
     let wall = new THREE.Mesh(
       geometry,
-      new THREE.MeshPhongMaterial(
-        { color:0xFFFFFF, wireframe: true }
-      )
+      material
     );
     wall.position.set(0, 0, 3.5);
     this.scene.add(wall);
@@ -114,9 +120,11 @@ export default class Render {
     geometry = new THREE.BoxGeometry(1, 1, .2, 1, 1, 1);
     this.player = new THREE.Mesh(
       geometry,
-      new THREE.MeshPhongMaterial(
-        { color:0x00ff00, wireframe: true }
-      )
+      new THREE.MeshPhongMaterial({ 
+        color:0x00ff00, 
+        wireframe: isWire,
+        opacity: true
+      })
     );
     this.player.position.set(0, 0, -3);
     this.scene.add(this.player);
