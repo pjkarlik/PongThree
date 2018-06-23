@@ -1,5 +1,5 @@
 
-![travis ci build](https://travis-ci.org/pjkarlik/Boilerplate.svg?branch=master&style=flat-square)
+![travis ci build](https://travis-ci.org/pjkarlik/PongThree.svg?branch=master&style=flat-square)
 ![babel](https://img.shields.io/badge/babel--core-6.26.0-green.svg?style=flat-square)
 ![webpack](https://img.shields.io/badge/webpack-3.6.0-51b1c5.svg?style=flat-square)
 ![stage-0](https://img.shields.io/badge/ECMAScript-6-c55197.svg?style=flat-square)
