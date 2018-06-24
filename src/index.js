@@ -1,4 +1,4 @@
-import Render from './cartridge/pong.js';
+import Render from './cartridge/grid.js';
 import { name, description, version, url } from '../version.json';
 
 require('../resources/styles/styles.css');

@@ -1,5 +1,6 @@
 import THREE from '../Three';
 import Particle from './libs/Particle.js';
+require('../shaders/pixel');
 
 // Skybox image imports //
 import xpos from '../../resources/images/line/posx.jpg';
@@ -20,20 +21,20 @@ export default class Render {
     this.camera = undefined;
     this.render = undefined;
 
-    this.threshold = 0.14;
-    this.strength = 0.73;
-    this.radius = 0.65;
+    this.threshold = 0.16;
+    this.strength = 0.75;
+    this.radius = 0.75;
 
     this.setViewport();
     this.setRender();
     this.setEffects();
     this.holoDeck();
     this.renderLoop();
-    // window.addEventListener('mousemove', this.movePlayer, true);
+    window.addEventListener('mousemove', this.movePlayer, true);
     window.addEventListener('resize', this.resize, true);
-    window.addEventListener('click', () => {
-      console.log(this.camera.position);
-    }, true);
+    // window.addEventListener('click', () => {
+    //   console.log(this.camera.position);
+    // }, true);
   }
 
   setViewport = () => {
@@ -105,8 +106,11 @@ export default class Render {
     this.composer.addPass(this.bloomPass);
 
     const copyEffect = new THREE.ShaderPass(THREE.CopyShader);
-    copyEffect.renderToScreen = true;
     this.composer.addPass(copyEffect);
+
+    this.rfrag = new THREE.ShaderPass(THREE.RenderFragment);
+    this.rfrag.renderToScreen = true;
+    this.composer.addPass(this.rfrag);
   }
 
   holoDeck = () => {
@@ -146,7 +150,7 @@ export default class Render {
     this.player = new THREE.Mesh(
       geometry,
       new THREE.MeshPhongMaterial({ 
-        color:0x00ff00, 
+        color:0xAA7700, 
         specular:0x999999,
         transparent: true,
         opacity: 0.35
@@ -199,7 +203,7 @@ export default class Render {
     this.ball.update();
     const ball = this.ball.ref;
     ball.position.set(this.ball.x, this.ball.y, this.ball.z);
-    this.player.position.set(this.ball.x, this.ball.y, -3);
+    // this.player.position.set(this.ball.x, this.ball.y, -3);
   };
 
   compositRender = () => {
