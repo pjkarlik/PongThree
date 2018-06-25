@@ -1,5 +1,5 @@
 import THREE from '../Three';
-import Particle from './libs/Particle.js';
+import Ball from './libs/Ball';
 require('../shaders/pixel');
 
 // Skybox image imports //
@@ -171,7 +171,7 @@ export default class Render {
     ball.position.set(0, 0, -2);
     this.scene.add(ball);
 
-    this.ball = new Particle({
+    this.ball = new Ball({
       size: 0.25,
       x: 0,
       y: 0,

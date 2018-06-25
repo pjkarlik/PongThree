@@ -6,7 +6,7 @@ THREE.RenderFragment = {
     "tSize":    { value: new THREE.Vector2( 256, 256 ) },
     "center":   { value: new THREE.Vector2( 0.5, 0.5 ) },
     "ratio":    { value: 512.0 },
-    "scale":    { value: 25.0 },
+    "scale":    { value: 35.0 },
     "frenz":    { value: 1024.0 }
 
   },
