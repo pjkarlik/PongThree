@@ -1,5 +1,5 @@
 import THREE from '../Three';
-require('../shaders/pixel');
+require('../shaders/fusion');
 
 // Skybox image imports //
 import xpos from '../../resources/images/line/posx.jpg';
@@ -258,13 +258,12 @@ export default class Render {
     }
 
 
-
     this.ball.x += this.ball.vx;
     this.ball.y += this.ball.vy;
     this.ball.z += this.ball.vz;
 
     ball.ref.position.set(this.ball.x, this.ball.y, this.ball.z);
-    this.shadow.position.set(this.ball.x, this.ball.y, -3.5);
+    this.shadow.position.set(this.ball.x, this.ball.y, -300.5);
   };
 
   movePlayer = (e) => {
@@ -276,7 +275,7 @@ export default class Render {
       ball.position.set(x, y, -2.5);
       this.ball.x = x;
       this.ball.y = y;
-      this.ball.z = -2.5;
+      // this.ball.z = -2.5;
     }
   };
 
