@@ -1,5 +1,5 @@
 import THREE from '../Three';
-require('../shaders/fusion');
+require('../shaders/pixel');
 
 // Skybox image imports //
 import xpos from '../../resources/images/line/posx.jpg';
