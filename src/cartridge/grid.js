@@ -1,5 +1,4 @@
 import THREE from '../Three';
-import Ball from './libs/Ball';
 require('../shaders/pixel');
 
 // Skybox image imports //
@@ -21,9 +20,24 @@ export default class Render {
     this.camera = undefined;
     this.render = undefined;
 
-    this.threshold = 0.16;
-    this.strength = 0.75;
-    this.radius = 0.75;
+    this.threshold = 0.12;
+    this.strength = 0.5;
+    this.radius = 0.25;
+
+    this.game = {
+      balls: 3,
+      inPlay: false,
+      hits: 0
+    };
+    this.box = {
+      top: 3,
+      left: -3,
+      bottom: -3,
+      right: 3,
+      front: 3,
+      back: -2.5
+    };
+    this.ball = {};
 
     this.setViewport();
     this.setRender();
@@ -32,9 +46,10 @@ export default class Render {
     this.renderLoop();
     window.addEventListener('mousemove', this.movePlayer, true);
     window.addEventListener('resize', this.resize, true);
-    // window.addEventListener('click', () => {
-    //   console.log(this.camera.position);
-    // }, true);
+    window.addEventListener('keyup', this.keyHandler, true);
+    window.addEventListener('click', () => {
+      console.log(this.player.position, this.player.position);
+    }, true);
   }
 
   setViewport = () => {
@@ -113,6 +128,15 @@ export default class Render {
     this.composer.addPass(this.rfrag);
   }
 
+  keyHandler = (e) => {
+    if(e.keyCode == 32){
+      this.game.inPlay = true;
+      this.ball.vx = Math.abs(Math.random() * 0.15);
+      this.ball.vy = Math.abs(Math.random() * 0.15);
+      this.ball.vz = 0.1 + Math.abs(Math.random() * 0.35);
+    }
+  }
+
   holoDeck = () => {
     let isWire = false;
 
@@ -156,12 +180,40 @@ export default class Render {
         opacity: 0.35
       })
     );
+
     this.player.position.set(0, 0, -3);
     this.scene.add(this.player);
 
-    // Set up Pong Ball //
+    geometry = new THREE.BoxGeometry(1, 1, .1, 1, 1, 1);
+    this.shadow = new THREE.Mesh(
+      geometry,
+      new THREE.MeshPhongMaterial({ 
+        color:0xEE8800, 
+        transparent: true,
+        opacity: 0.15
+      })
+    );
 
-    geometry = new THREE.SphereGeometry(.25, 12, 12);
+    this.shadow.position.set(0, 0, -3.5);
+    this.scene.add(this.shadow);
+
+    this.createBall();
+  };
+
+  createBall = () => {
+    // Set up Pong Ball //
+    this.ball = {
+      size: 0.25,
+      x: 0,
+      y: 0,
+      z: -1,
+      vx: 0,
+      vy: 0,
+      vz: 0,
+      ref: null
+    };
+
+    const geometry = new THREE.SphereGeometry(.25, 12, 12);
     const ball = new THREE.Mesh(
       geometry,
       new THREE.MeshBasicMaterial({ 
@@ -171,40 +223,63 @@ export default class Render {
     ball.position.set(0, 0, -2);
     this.scene.add(ball);
 
-    this.ball = new Ball({
-      size: 0.25,
-      x: 0,
-      y: 0,
-      z: -1,
-      vx: 0.08,
-      vy: 0.05,
-      vz: 0.1,
-      size: 0.25,
-      box: {
-        top: 3,
-        left: -3,
-        bottom: -3,
-        right: 3,
-        front: 3,
-        back: -2.5
-      },
-      ref: ball
-    });
+    this.ball.ref = ball;
+  };
+
+  checkball = () => {
+    const ball = this.ball;
+    const player = this.player.position;
+
+    if (this.ball.y > this.box.top + ball.size || this.ball.y < this.box.bottom - ball.size) {
+      this.ball.vy = -this.ball.vy;
+    }
+   
+    if (this.ball.x < this.box.left - ball.size || this.ball.x > this.box.right + ball.size) {
+      this.ball.vx = -this.ball.vx;
+    }
+    
+    const afd = 0.5;
+    const isX = player.x <= this.ball.x + afd && player.x >= this.ball.x - afd;
+    const isY = player.y <= this.ball.y + afd && player.y >= this.ball.y - afd;
+
+    if (this.ball.z < this.box.back + ball.size && isX && isY ) {
+      this.ball.vz = -this.ball.vz;  
+      this.ball.vx = Math.abs(Math.random() * 0.15); // ((player.x - this.ball.x) * 0.61);
+      this.ball.vy = Math.abs(Math.random() * 0.15);
+    }
+
+    if (this.ball.z < -4) {
+      this.game.inPlay = false;
+      this.ball.z = -1;
+    }
+
+    if (this.ball.z > this.box.front - ball.size) {
+      this.ball.vz = -this.ball.vz;
+    }
+
+
+
+    this.ball.x += this.ball.vx;
+    this.ball.y += this.ball.vy;
+    this.ball.z += this.ball.vz;
+
+    ball.ref.position.set(this.ball.x, this.ball.y, this.ball.z);
+    this.shadow.position.set(this.ball.x, this.ball.y, -3.5);
   };
 
   movePlayer = (e) => {
     const x = ((this.width / 2) - e.clientX) * 0.02;
     const y = ((this.height / 2) - e.clientY) * 0.02;
-    
     this.player.position.set(x, y, -3);
+    if (!this.game.inPlay) {
+      const ball = this.ball.ref;
+      ball.position.set(x, y, -2.5);
+      this.ball.x = x;
+      this.ball.y = y;
+      this.ball.z = -2.5;
+    }
   };
 
-  checkball = () => {
-    this.ball.update();
-    const ball = this.ball.ref;
-    ball.position.set(this.ball.x, this.ball.y, this.ball.z);
-    // this.player.position.set(this.ball.x, this.ball.y, -3);
-  };
 
   compositRender = () => {
     this.composer.render();
@@ -215,7 +290,10 @@ export default class Render {
   renderLoop = () => {
     this.frames ++;
     this.compositRender();
-    this.checkball();
+    if (this.game.inPlay) {
+      this.checkball();
+    }
+    // this.rfrag.uniforms.time.value = this.frames * 0.01;
     this.animation = window.requestAnimationFrame(this.renderLoop);
   };
 }

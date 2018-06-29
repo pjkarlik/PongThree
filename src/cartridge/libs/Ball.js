@@ -30,7 +30,7 @@ export default class Ball {
       this.vx = -this.vx;
     }
 
-    if (this.z < this.box.back - this.size || this.z > this.box.front + this.size) {
+    if (this.z < this.box.back - this.size && || this.z > this.box.front + this.size) {
       this.vz = -this.vz;
     }
 
