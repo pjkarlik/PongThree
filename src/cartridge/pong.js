@@ -1,5 +1,5 @@
 import THREE from '../Three';
-import Particle from './libs/Particle.js';
+require('../shaders/fusion');
 
 // Skybox image imports //
 import xpos from '../../resources/images/line/posx.jpg';
@@ -20,17 +20,33 @@ export default class Render {
     this.camera = undefined;
     this.render = undefined;
 
-    this.threshold = 0.14;
-    this.strength = 0.73;
+    this.threshold = 0.15;
+    this.strength = 0.65;
     this.radius = 0.65;
+
+    this.game = {
+      balls: 3,
+      inPlay: false,
+      hits: 0
+    };
+    this.box = {
+      top: 3,
+      left: -3,
+      bottom: -3,
+      right: 3,
+      front: 3,
+      back: -2.5
+    };
+    this.ball = {};
 
     this.setViewport();
     this.setRender();
     this.setEffects();
     this.holoDeck();
     this.renderLoop();
-    // window.addEventListener('mousemove', this.movePlayer, true);
+    window.addEventListener('mousemove', this.movePlayer, true);
     window.addEventListener('resize', this.resize, true);
+    window.addEventListener('keyup', this.keyHandler, true);
     window.addEventListener('click', () => {
       console.log(this.camera.position);
     }, true);
@@ -61,36 +77,46 @@ export default class Render {
     document.body.appendChild(this.renderer.domElement);
 
     this.scene = new THREE.Scene();
+
+    this.setCamera();
+    this.skyBox();
+    this.setLights();
+  };
+
+  setCamera = () => {
     this.camera = new THREE.PerspectiveCamera(
       this.viewAngle,
       this.aspect,
       this.near,
       this.far
     );
-    this.camera.position.set(-2.2, 2.5, -9.5);
+    this.camera.position.set(6.2, 0.45, -7.8);
     this.camera.lookAt(new THREE.Vector3());
 
     this.controls = new THREE.OrbitControls(this.camera);
     this.controls.maxDistance = 1500;
     this.controls.minDistance = 0;
+  };
 
-    // Set AmbientLight //
-    let pointLight = new THREE.PointLight(0xDDDDDD);
-    pointLight.position.set(12, 6, -12);
-    this.scene.add(pointLight);
-    pointLight = new THREE.PointLight(0xEEEEEE);
-    pointLight.position.set(-12, 15, -12);
-    this.scene.add(pointLight);
-    let ambient = new THREE.AmbientLight(0x9f9f9f);
-    ambient.position.set(0, 25, -8);
-    this.scene.add(ambient);
-
-    // Skybox //
+  skyBox = () => {
     const urls = [xpos, xneg, ypos, yneg, zpos, zneg];
     const skybox = new THREE.CubeTextureLoader().load(urls);
     skybox.format = THREE.RGBFormat;
     skybox.mapping = THREE.CubeRefractionMapping;
     this.scene.background = skybox;
+  };
+
+  setLights = () => {
+    // Set AmbientLight //
+    let pointLight = new THREE.PointLight(0xAAAAAA);
+    pointLight.position.set(12, 6, -19);
+    this.scene.add(pointLight);
+    pointLight = new THREE.PointLight(0x999999);
+    pointLight.position.set(-12, 15, 16);
+    this.scene.add(pointLight);
+    let ambient = new THREE.AmbientLight(0xAAAAAA);
+    ambient.position.set(0, 25, 20);
+    this.scene.add(ambient);
   };
 
   setEffects = () => {
@@ -105,9 +131,21 @@ export default class Render {
     this.composer.addPass(this.bloomPass);
 
     const copyEffect = new THREE.ShaderPass(THREE.CopyShader);
-    copyEffect.renderToScreen = true;
     this.composer.addPass(copyEffect);
-  }
+
+    this.rfrag = new THREE.ShaderPass(THREE.RenderFragment);
+    this.rfrag.renderToScreen = true;
+    this.composer.addPass(this.rfrag);
+  };
+
+  keyHandler = (e) => {
+    if(e.keyCode == 32){
+      this.game.inPlay = true;
+      this.ball.vx = Math.abs(Math.random() * 0.12);
+      this.ball.vy = Math.abs(Math.random() * 0.12);
+      this.ball.vz = 0.1 + Math.abs(Math.random() * 0.075);
+    }
+  };
 
   holoDeck = () => {
     let isWire = false;
@@ -117,12 +155,11 @@ export default class Render {
     const texture = texloader.load(grid, () => {
       texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
       texture.offset.set(0, 0);
-      texture.repeat.set(1, 1);
+      texture.repeat.set(2, 2);
     });
   
     let material = new THREE.MeshPhongMaterial({
       map: texture,
-      side: THREE.DoubleSide,
       transparent: true,
     });
 
@@ -146,60 +183,110 @@ export default class Render {
     this.player = new THREE.Mesh(
       geometry,
       new THREE.MeshPhongMaterial({ 
-        color:0x00ff00, 
+        color:0xAA7700, // 0xAA7700
         specular:0x999999,
         transparent: true,
         opacity: 0.35
       })
     );
+
     this.player.position.set(0, 0, -3);
     this.scene.add(this.player);
 
-    // Set up Pong Ball //
+    // geometry = new THREE.BoxGeometry(1, .1, 1, 1, 1, 1);
+    // this.shadow = new THREE.Mesh(
+    //   geometry,
+    //   new THREE.MeshPhongMaterial({ 
+    //     color:0x0088EE, // 0xEE8800 
+    //     transparent: true,
+    //     opacity: 0.15
+    //   })
+    // );
 
-    geometry = new THREE.SphereGeometry(.25, 12, 12);
+    // this.shadow.position.set(0, -3.5, -2.5);
+    // this.scene.add(this.shadow);
+
+    this.createBall();
+  };
+
+  createBall = () => {
+    // Set up Pong Ball //
+    this.ball = {
+      size: 0.25,
+      x: 0,
+      y: 0,
+      z: -1,
+      vx: 0,
+      vy: 0,
+      vz: 0,
+      ref: null
+    };
+
+    const geometry = new THREE.SphereGeometry(.25, 12, 12);
     const ball = new THREE.Mesh(
       geometry,
-      new THREE.MeshBasicMaterial({ 
-        color:0xFFFFFF
+      new THREE.MeshPhongMaterial({ 
+        color:0xFFFFFF,
+        specular: 0xFF0000
       })
     );
     ball.position.set(0, 0, -2);
     this.scene.add(ball);
 
-    this.ball = new Particle({
-      size: 0.25,
-      x: 0,
-      y: 0,
-      z: -1,
-      vx: 0.08,
-      vy: 0.05,
-      vz: 0.1,
-      size: 0.25,
-      box: {
-        top: 3,
-        left: -3,
-        bottom: -3,
-        right: 3,
-        front: 3,
-        back: -2.5
-      },
-      ref: ball
-    });
+    this.ball.ref = ball;
+  };
+
+  checkball = () => {
+    const ball = this.ball;
+    const player = this.player.position;
+
+    if (this.ball.y > this.box.top + ball.size || this.ball.y < this.box.bottom - ball.size) {
+      this.ball.vy = -this.ball.vy;
+    }
+   
+    if (this.ball.x < this.box.left - ball.size || this.ball.x > this.box.right + ball.size) {
+      this.ball.vx = -this.ball.vx;
+    }
+    
+    const afd = 0.5;
+    const isX = player.x <= this.ball.x + afd && player.x >= this.ball.x - afd;
+    const isY = player.y <= this.ball.y + afd && player.y >= this.ball.y - afd;
+
+    if (this.ball.z < this.box.back + ball.size && isX && isY ) {
+      this.ball.vz = -this.ball.vz;  
+      this.ball.vx = Math.random() * 0.12; // ((player.x - this.ball.x) * 0.61);
+      this.ball.vy = Math.random() * 0.12;
+    }
+
+    if (this.ball.z < -4) {
+      this.game.inPlay = false;
+      this.ball.z = -1;
+    }
+
+    if (this.ball.z > this.box.front - ball.size) {
+      this.ball.vz = -this.ball.vz;
+    }
+
+
+    this.ball.x += this.ball.vx;
+    this.ball.y += this.ball.vy;
+    this.ball.z += this.ball.vz;
+
+    ball.ref.position.set(this.ball.x, this.ball.y, this.ball.z);
+    // this.shadow.position.set(this.ball.x, -2.75, this.ball.y);
   };
 
   movePlayer = (e) => {
     const x = ((this.width / 2) - e.clientX) * 0.02;
     const y = ((this.height / 2) - e.clientY) * 0.02;
-    
     this.player.position.set(x, y, -3);
-  };
-
-  checkball = () => {
-    this.ball.update();
-    const ball = this.ball.ref;
-    ball.position.set(this.ball.x, this.ball.y, this.ball.z);
-    this.player.position.set(this.ball.x, this.ball.y, -3);
+    if (!this.game.inPlay) {
+      const ball = this.ball.ref;
+      ball.position.set(x, y, -2.5);
+      this.ball.x = x;
+      this.ball.y = y;
+      // this.ball.z = -2.5;
+    }
   };
 
   compositRender = () => {
@@ -211,7 +298,10 @@ export default class Render {
   renderLoop = () => {
     this.frames ++;
     this.compositRender();
-    this.checkball();
+    if (this.game.inPlay) {
+      this.checkball();
+    }
+    // this.rfrag.uniforms.time.value = this.frames * 0.01;
     this.animation = window.requestAnimationFrame(this.renderLoop);
   };
 }
