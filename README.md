@@ -10,6 +10,8 @@
 # Pong in THREEjs
 
   I'm making pong / tron disc's in three js - lets see how this goes.
+
+  Recently updated - press the ```space bar``` to launch the ball. Once out of bounds it resets to your paddel.
 ##
 
 ## TBD More to come
