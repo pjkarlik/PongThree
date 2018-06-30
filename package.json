@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "./node_modules/.bin/webpack-dev-server --progress --colors --content-base dist/",
     "clean": "rm -rf dist",
-    "build": "npm run clean && ./node_modules/.bin/webpack --progress --colors",
+    "build": "yarn run clean && webpack --progress --colors",
     "test": "./node_modules/.bin/eslint ./src --color",
     "webpack": "./node_modules/.bin/webpack --progress --colors"
   },
