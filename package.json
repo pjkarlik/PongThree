@@ -16,7 +16,7 @@
   },
   "author": "pjkarlik@gmail.com",
   "license": "UNLICENSED",
-  "devDependencies": {
+  "dependencies": {
     "autoprefixer": "^8.6.2",
     "babel-core": "~6.26.0",
     "babel-eslint": "^8.2.3",
