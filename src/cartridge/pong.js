@@ -20,9 +20,9 @@ export default class Render {
     this.camera = undefined;
     this.render = undefined;
 
-    this.threshold = 0.15;
-    this.strength = 0.65;
-    this.radius = 0.65;
+    this.threshold = 0.25;
+    this.strength = 0.85;
+    this.radius = 0.75;
 
     this.game = {
       balls: 3,
@@ -277,7 +277,8 @@ export default class Render {
   };
 
   movePlayer = (e) => {
-    const x = ((this.width / 2) - e.clientX) * 0.02;
+    const dir = this.camera.position.z;
+    const x = dir < 0 ? ((this.width / 2) - e.clientX) * 0.02 : -((this.width / 2) - e.clientX) * 0.02;
     const y = ((this.height / 2) - e.clientY) * 0.02;
     this.player.position.set(x, y, -3);
     if (!this.game.inPlay) {
