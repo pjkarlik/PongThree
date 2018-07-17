@@ -260,7 +260,7 @@ export default class Render {
     ball.ref.position.set(this.ball.x, this.ball.y, this.ball.z);
   
     if (this.frames % 5 === 0 && this.particles.length < 400 && this.game.inPlay) {
-      const baller = this.createBall(this.ball.x, this.ball.y, this.ball.z, 0x33FF00);
+      const baller = this.createBall(this.ball.x, this.ball.y, this.ball.z, 0xFFFFFF);
       const trail = {
         size: this.ball.size * 2,
         life: 0,
@@ -272,7 +272,7 @@ export default class Render {
 
   checkparticles() {
     this.particles.forEach((element, index) => {
-      element.size -= (element.life * 0.00005);
+      element.size -= (element.life * 0.00002);
       element.life++;
       element.ref.scale.x = element.size;
       element.ref.scale.y = element.size;
@@ -289,8 +289,20 @@ export default class Render {
 
   movePlayer = (e) => {
     const dir = this.camera.position.z;
-    const x = dir < 0 ? ((this.width / 2) - e.clientX) * 0.02 : -((this.width / 2) - e.clientX) * 0.02;
-    const y = ((this.height / 2) - e.clientY) * 0.02;
+    let x = dir < 0 ? ((this.width / 2) - e.clientX) * 0.02 : -((this.width / 2) - e.clientX) * 0.02;
+    let y = ((this.height / 2) - e.clientY) * 0.02;
+    if (y > this.box.top) {
+      y = this.box.top;
+    }
+    if (y < this.box.bottom) {
+      y = this.box.bottom;
+    }
+    if (x > this.box.right) {
+      x = this.box.right;
+    }
+    if (x < this.box.left) {
+      x = this.box.left;
+    }
     this.player.position.set(x, y, -3);
     if (!this.game.inPlay) {
       const ball = this.ball.ref;
