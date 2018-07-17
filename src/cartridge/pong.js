@@ -1,4 +1,5 @@
 import THREE from '../Three';
+import { Howl } from 'howler';
 require('../shaders/fusion');
 
 // Skybox image imports //
@@ -10,6 +11,15 @@ import zpos from '../../resources/images/line/posz.jpg';
 import zneg from '../../resources/images/line/negz.jpg';
 
 import grid from '../../resources/images/grid_trans.png';
+
+
+import beep1 from '../../resources/sound/BEEP1.wav';
+import beep2 from '../../resources/sound/BEEP2.wav';
+import beep3 from '../../resources/sound/BEEP3.wav';
+import beep4 from '../../resources/sound/BEEP4.wav';
+import beep5 from '../../resources/sound/BEEP5.wav';
+import beep6 from '../../resources/sound/BEEP6.wav';
+
 
 // Render Class Object //
 export default class Render {
@@ -51,6 +61,7 @@ export default class Render {
     this.setViewport();
     this.setRender();
     this.setEffects();
+    this.soundAssets = this.downloadAll();
     this.holoDeck();
     this.renderLoop();
     window.addEventListener('mousemove', this.movePlayer, true);
@@ -60,6 +71,60 @@ export default class Render {
       console.log(this.camera.position);
     }, true);
   }
+
+  getSoundLoader = (id, asset) => {
+    console.log(id, asset.src);
+    return new Promise((resolve, reject) => {
+      const sound = new Howl({
+        src: [asset.src],
+        volume: asset.volume,
+        onload: () => {
+          this.assets[id].data = sound;
+          resolve(sound);
+        },
+        onloaderror: (e) => { reject(e); },
+      });
+    });
+  };
+
+  downloadAll = () =>{
+    const defaults = {
+      type: 'sound',
+      volume: 0.5,
+      data: null
+    };
+    
+    this.assets = {
+      beep1: {
+        src: beep1,
+        ...defaults
+      },
+      beep2: {
+        src: beep2,
+        ...defaults
+      },
+      beep3: {
+        src: beep3,
+        ...defaults
+      },
+      beep4: {
+        src: beep4,
+        ...defaults
+      },
+      beep5: {
+        src: beep5,
+        ...defaults
+      },
+      beep6: {
+        src: beep6,
+        ...defaults
+      },
+    };
+    
+    return Promise.all(
+      Object.keys(this.assets)
+        .map((id) => (this.getSoundLoader(id, this.assets[id]))));
+  };
 
   setViewport = () => {
     this.width = window.innerWidth;
@@ -148,17 +213,19 @@ export default class Render {
   };
 
   keyHandler = (e) => {
+    if (this.game.inPlay) return;
     if(e.keyCode == 32){
       this.game.inPlay = true;
       this.ball.vx = Math.abs(Math.random() * 0.12);
       this.ball.vy = Math.abs(Math.random() * 0.12);
       this.ball.vz = 0.1 + Math.abs(Math.random() * 0.075);
+      this.assets['beep5'].data.play();
     }
   };
 
   holoDeck = () => {
     let isWire = false;
-
+    console.log(this.soundAssets);
     const texloader = new THREE.TextureLoader();
   
     const texture = texloader.load(grid, () => {
@@ -227,10 +294,12 @@ export default class Render {
 
     if (this.ball.y > this.box.top + ball.size || this.ball.y < this.box.bottom - ball.size) {
       this.ball.vy = -this.ball.vy;
+      this.assets['beep6'].data.play();
     }
    
     if (this.ball.x < this.box.left - ball.size || this.ball.x > this.box.right + ball.size) {
       this.ball.vx = -this.ball.vx;
+      this.assets['beep3'].data.play();
     }
     
     const afd = 0.5;
@@ -241,15 +310,18 @@ export default class Render {
       this.ball.vz = -this.ball.vz;  
       this.ball.vx = Math.random() * 0.12; // ((player.x - this.ball.x) * 0.61);
       this.ball.vy = Math.random() * 0.12;
+      this.assets['beep1'].data.play();
     }
 
     if (this.ball.z < -4) {
       this.game.inPlay = false;
       this.ball.z = -1;
+      this.assets['beep4'].data.play();
     }
 
     if (this.ball.z > this.box.front - ball.size) {
       this.ball.vz = -this.ball.vz;
+      this.assets['beep1'].data.play();
     }
 
 
