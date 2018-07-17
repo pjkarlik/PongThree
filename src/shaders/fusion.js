@@ -64,8 +64,8 @@ THREE.RenderFragment = {
         // "(overlay.r),",
         // "(overlay.g),",
         // "(overlay.b),",
-        "color.r, color.g + pattern(), color.b,",
-        // "overlay.r, overlay.g + pattern(), overlay.b,",
+        // "color.r, color.g + pattern(), color.b,",
+        "overlay.r, overlay.g + pattern(), overlay.b,",
         "overlay.a",
       ");",
 

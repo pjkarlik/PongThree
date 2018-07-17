@@ -214,7 +214,7 @@ export default class Render {
 
   keyHandler = (e) => {
     if (this.game.inPlay) return;
-    if(e.keyCode == 32){
+    if(e.keyCode == 32 && this.particles.length < 10){
       this.game.inPlay = true;
       this.ball.vx = Math.abs(Math.random() * 0.12);
       this.ball.vy = Math.abs(Math.random() * 0.12);
@@ -331,7 +331,7 @@ export default class Render {
 
     ball.ref.position.set(this.ball.x, this.ball.y, this.ball.z);
   
-    if (this.frames % 5 === 0 && this.particles.length < 400 && this.game.inPlay) {
+    if (this.frames % 3 === 0 && this.particles.length < 400 && this.game.inPlay) {
       const baller = this.createBall(this.ball.x, this.ball.y, this.ball.z, 0xFFFFFF);
       const trail = {
         size: this.ball.size * 2,
@@ -344,7 +344,8 @@ export default class Render {
 
   checkparticles() {
     this.particles.forEach((element, index) => {
-      element.size -= (element.life * 0.00002);
+      const decay = this.game.inPlay ? 0.00003 : 0.0006;
+      element.size -= (element.life * decay);
       element.life++;
       element.ref.scale.x = element.size;
       element.ref.scale.y = element.size;
