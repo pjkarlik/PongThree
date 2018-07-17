@@ -19,7 +19,7 @@ export default class Render {
     this.scene = undefined;
     this.camera = undefined;
     this.render = undefined;
-
+    this.particles = [];
     this.threshold = 0.25;
     this.strength = 0.85;
     this.radius = 0.75;
@@ -37,7 +37,16 @@ export default class Render {
       front: 3,
       back: -2.5
     };
-    this.ball = {};
+    this.ball = {
+      size: 0.25,
+      x: 0,
+      y: 0,
+      z: -1,
+      vx: 0,
+      vy: 0,
+      vz: 0,
+      ref: null
+    };
 
     this.setViewport();
     this.setRender();
@@ -193,47 +202,23 @@ export default class Render {
     this.player.position.set(0, 0, -3);
     this.scene.add(this.player);
 
-    // geometry = new THREE.BoxGeometry(1, .1, 1, 1, 1, 1);
-    // this.shadow = new THREE.Mesh(
-    //   geometry,
-    //   new THREE.MeshPhongMaterial({ 
-    //     color:0x0088EE, // 0xEE8800 
-    //     transparent: true,
-    //     opacity: 0.15
-    //   })
-    // );
-
-    // this.shadow.position.set(0, -3.5, -2.5);
-    // this.scene.add(this.shadow);
-
-    this.createBall();
+    const ball = this.createBall(0, 0, -2);
+    this.ball.ref = ball;
   };
 
-  createBall = () => {
-    // Set up Pong Ball //
-    this.ball = {
-      size: 0.25,
-      x: 0,
-      y: 0,
-      z: -1,
-      vx: 0,
-      vy: 0,
-      vz: 0,
-      ref: null
-    };
-
+  createBall = (dx, dy, dz, color = 0xFFFFFF) => {
     const geometry = new THREE.SphereGeometry(.25, 12, 12);
     const ball = new THREE.Mesh(
       geometry,
       new THREE.MeshPhongMaterial({ 
-        color:0xFFFFFF,
+        color,
         specular: 0xFF0000
       })
     );
-    ball.position.set(0, 0, -2);
+    ball.position.set(dx, dy, dz);
     this.scene.add(ball);
 
-    this.ball.ref = ball;
+    return ball;
   };
 
   checkball = () => {
@@ -273,7 +258,33 @@ export default class Render {
     this.ball.z += this.ball.vz;
 
     ball.ref.position.set(this.ball.x, this.ball.y, this.ball.z);
-    // this.shadow.position.set(this.ball.x, -2.75, this.ball.y);
+  
+    if (this.frames % 5 === 0 && this.particles.length < 400 && this.game.inPlay) {
+      const baller = this.createBall(this.ball.x, this.ball.y, this.ball.z, 0x33FF00);
+      const trail = {
+        size: this.ball.size * 2,
+        life: 0,
+        ref: baller
+      };
+      this.particles.push(trail);
+    }
+  };
+
+  checkparticles() {
+    this.particles.forEach((element, index) => {
+      element.size -= (element.life * 0.00005);
+      element.life++;
+      element.ref.scale.x = element.size;
+      element.ref.scale.y = element.size;
+      element.ref.scale.z = element.size;
+      if (element.size < 0.0) {
+        element.ref.geometry.dispose();
+        element.ref.material.dispose();
+        this.scene.remove(element.ref);
+        element = undefined;
+        this.particles.splice(index, 1);
+      }
+    });
   };
 
   movePlayer = (e) => {
@@ -301,6 +312,9 @@ export default class Render {
     this.compositRender();
     if (this.game.inPlay) {
       this.checkball();
+    }
+    if (this.particles.length > 0) {
+      this.checkparticles();
     }
     // this.rfrag.uniforms.time.value = this.frames * 0.01;
     this.animation = window.requestAnimationFrame(this.renderLoop);
