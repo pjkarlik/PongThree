@@ -1,6 +1,6 @@
 import THREE from '../Three';
 import { Howl } from 'howler';
-require('../shaders/fusion');
+require('../shaders/blinder');
 
 // Skybox image imports //
 import xpos from '../../resources/images/line/posx.jpg';
@@ -19,7 +19,7 @@ import beep3 from '../../resources/sound/BEEP3.wav';
 import beep4 from '../../resources/sound/BEEP4.wav';
 import beep5 from '../../resources/sound/BEEP5.wav';
 import beep6 from '../../resources/sound/BEEP6.wav';
-
+import PHASE from '../../resources/sound/PHASE.wav';
 
 // Render Class Object //
 export default class Render {
@@ -29,11 +29,13 @@ export default class Render {
     this.scene = undefined;
     this.camera = undefined;
     this.render = undefined;
+    this.score = 0;
+    this.ballsLeft = 10;
     this.particles = [];
     this.threshold = 0.25;
     this.strength = 0.85;
     this.radius = 0.75;
-
+    this.display;
     this.game = {
       balls: 3,
       inPlay: false,
@@ -57,13 +59,18 @@ export default class Render {
       vz: 0,
       ref: null
     };
-
+    this.soundAssets = this.downloadAll();
+    setTimeout(() => {
+      this.assets['PHASE'].data._loop = true;
+      this.assets['PHASE'].data.play();
+    }, 1500);
     this.setViewport();
     this.setRender();
     this.setEffects();
-    this.soundAssets = this.downloadAll();
     this.holoDeck();
     this.renderLoop();
+    this.injectDisplay();
+    this.updateDisplay();
     window.addEventListener('mousemove', this.movePlayer, true);
     window.addEventListener('resize', this.resize, true);
     window.addEventListener('keyup', this.keyHandler, true);
@@ -119,11 +126,32 @@ export default class Render {
         src: beep6,
         ...defaults
       },
+      PHASE: {
+        src: PHASE,
+        ...defaults,
+      }
     };
     
     return Promise.all(
       Object.keys(this.assets)
         .map((id) => (this.getSoundLoader(id, this.assets[id]))));
+  };
+
+  injectDisplay = () => {
+    this.display = {};
+
+    const display = document.createElement('div');
+    display.className = 'display';
+    const ballsLeft = document.createElement('div');
+    const playerScore = document.createElement('div');
+    this.display = {
+      parent: display,
+      ballsLeft,
+      playerScore
+    };
+    display.appendChild(ballsLeft);
+    display.appendChild(playerScore);
+    document.body.appendChild(display);
   };
 
   setViewport = () => {
@@ -208,6 +236,7 @@ export default class Render {
     this.composer.addPass(copyEffect);
 
     this.rfrag = new THREE.ShaderPass(THREE.RenderFragment);
+    this.rfrag.uniforms.time.value = this.frames;
     this.rfrag.renderToScreen = true;
     this.composer.addPass(this.rfrag);
   };
@@ -311,12 +340,14 @@ export default class Render {
       this.ball.vx = Math.random() * 0.12; // ((player.x - this.ball.x) * 0.61);
       this.ball.vy = Math.random() * 0.12;
       this.assets['beep1'].data.play();
+      this.score += 10;
     }
 
     if (this.ball.z < -4) {
       this.game.inPlay = false;
       this.ball.z = -1;
       this.assets['beep4'].data.play();
+      this.ballsLeft -= 1;
     }
 
     if (this.ball.z > this.box.front - ball.size) {
@@ -386,6 +417,11 @@ export default class Render {
     }
   };
 
+  updateDisplay = () => {
+    this.display.playerScore.innerHTML = `score:${this.score}`;
+    this.display.ballsLeft.innerHTML = `balls:${this.ballsLeft}`; 
+  };
+
   compositRender = () => {
     this.composer.render();
     // this.renderer.render(this.scene, this.camera);
@@ -401,7 +437,10 @@ export default class Render {
     if (this.particles.length > 0) {
       this.checkparticles();
     }
-    // this.rfrag.uniforms.time.value = this.frames * 0.01;
+    if (this.frames % 3 === 0) {
+      this.updateDisplay();
+    }
+    this.rfrag.uniforms.time.value = this.frames * 0.003;
     this.animation = window.requestAnimationFrame(this.renderLoop);
   };
 }
