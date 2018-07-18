@@ -62,8 +62,9 @@ export default class Render {
     this.soundAssets = this.downloadAll();
     setTimeout(() => {
       this.assets['PHASE'].data._loop = true;
+      this.assets['PHASE'].data.fade(0, 0.5, 6000);
       this.assets['PHASE'].data.play();
-    }, 1500);
+    }, 3000);
     this.setViewport();
     this.setRender();
     this.setEffects();
