@@ -18,6 +18,7 @@ canvas {
 
 .display {
   border: 1px dotted #ffffff;
+  border-radius: 10px;
   position: absolute;
   box-sizing: border-box;
   font-family: 'Press Start 2P', cursive;
@@ -29,11 +30,17 @@ canvas {
   z-index: 2;
 }
 
-.display > div {
+.score,
+.balls {
   display: inline-block;
   box-sizing: border-box;
   padding: 5px;
   margin: 5px;
   font-size: 25px;
-  color: #FFF;
+  color: #ffffff;
+  font-family: 'Press Start 2P', cursive;
+}
+
+.score {
+  color: #ff0808;
 }

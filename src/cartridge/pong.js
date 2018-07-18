@@ -1,6 +1,6 @@
 import THREE from '../Three';
 import { Howl } from 'howler';
-require('../shaders/blinder');
+require('../shaders/default');
 
 // Skybox image imports //
 import xpos from '../../resources/images/line/posx.jpg';
@@ -13,13 +13,13 @@ import zneg from '../../resources/images/line/negz.jpg';
 import grid from '../../resources/images/grid_trans.png';
 
 
-import beep1 from '../../resources/sound/BEEP1.wav';
-import beep2 from '../../resources/sound/BEEP2.wav';
-import beep3 from '../../resources/sound/BEEP3.wav';
-import beep4 from '../../resources/sound/BEEP4.wav';
-import beep5 from '../../resources/sound/BEEP5.wav';
-import beep6 from '../../resources/sound/BEEP6.wav';
-import PHASE from '../../resources/sound/PHASE.wav';
+import beep1 from '../../resources/sound/BEEP1.mp3';
+import beep2 from '../../resources/sound/BEEP2.mp3';
+import beep3 from '../../resources/sound/BEEP3.mp3';
+import beep4 from '../../resources/sound/BEEP4.mp3';
+import beep5 from '../../resources/sound/BEEP5.mp3';
+import beep6 from '../../resources/sound/BEEP6.mp3';
+import PHASE from '../../resources/sound/PHASE.mp3';
 
 // Render Class Object //
 export default class Render {
@@ -142,9 +142,11 @@ export default class Render {
     this.display = {};
 
     const display = document.createElement('div');
-    display.className = 'display';
     const ballsLeft = document.createElement('div');
     const playerScore = document.createElement('div');
+    display.className = 'display';
+    ballsLeft.className = 'balls';
+    playerScore.className = 'score';
     this.display = {
       parent: display,
       ballsLeft,
@@ -237,7 +239,7 @@ export default class Render {
     this.composer.addPass(copyEffect);
 
     this.rfrag = new THREE.ShaderPass(THREE.RenderFragment);
-    this.rfrag.uniforms.time.value = this.frames;
+    // this.rfrag.uniforms.time.value = this.frames;
     this.rfrag.renderToScreen = true;
     this.composer.addPass(this.rfrag);
   };
@@ -441,7 +443,7 @@ export default class Render {
     if (this.frames % 3 === 0) {
       this.updateDisplay();
     }
-    this.rfrag.uniforms.time.value = this.frames * 0.003;
+    // this.rfrag.uniforms.time.value = this.frames * 0.003;
     this.animation = window.requestAnimationFrame(this.renderLoop);
   };
 }
