@@ -7,6 +7,7 @@ THREE.RenderFragment = {
     "center":   { value: new THREE.Vector2( 0.5, 0.5 ) },
     "ratio":    { value: 512.0 },
     "scale":    { value: 35.0 },
+    "time":     { value: 0.0 },
     "frenz":    { value: 1024.0 }
 
   },

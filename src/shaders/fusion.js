@@ -5,8 +5,9 @@ THREE.RenderFragment = {
     "tDiffuse": { value: null },
     "tSize":    { value: new THREE.Vector2( 512, 512 ) },
     "center":   { value: new THREE.Vector2( 0.5, 0.5 ) },
-    "ratio":    { value: 512.0 },
-    "scale":    { value: 2.0 },
+    "ratio":    { value: 1024.0 },
+    "scale":    { value: 4.0 },
+    "time":     { value: 0.0 },
     "frenz":    { value: 1024.0 }
 
   },
@@ -38,7 +39,7 @@ THREE.RenderFragment = {
       "vec2 q = vUv;",
       "float s = sin( 1.57 ), c = cos( 1.57 );",
       "vec2 tex = vUv * tSize - center;",
-      "vec2 point = vec2( c * tex.x - s * tex.y, s * tex.x + c * tex.y ) * 8.0;",
+      "vec2 point = vec2( c * tex.x - s * tex.y, s * tex.x + c * tex.y ) * 20.0;",
       "return ( cos( point.x ) ) * 0.25;",
     "}",
 
@@ -51,7 +52,7 @@ THREE.RenderFragment = {
       "vec4 color = texture2D( tDiffuse, Coord);",
       "vec4 overlay = texture2D( tDiffuse, q);",
       "gl_FragColor = vec4(",
-        "color.r, color.g + pattern(), color.b,",
+        "color.r * (1.+q.y) + pattern(), color.g * (1.+q.x) + pattern(), color.b * (1.+q.y) + pattern(),",
         // "overlay.r, overlay.g + pattern(), overlay.b,",
         "overlay.a",
       ");",

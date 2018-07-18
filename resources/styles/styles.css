@@ -18,6 +18,7 @@ canvas {
 
 .display {
   border: 1px dotted #ffffff;
+  background: rgba(0,0,0,0.75);
   border-radius: 10px;
   position: absolute;
   box-sizing: border-box;
@@ -28,6 +29,11 @@ canvas {
   left: 50%;
   transform: translateX(-50%);
   z-index: 2;
+  text-shadow:
+  -1px -1px 0 #ffc0ed,  
+   1px -1px 0 #a9fffe,
+   -1px 1px 0 #ffc0ed,
+    1px 1px 0 #a9fffe;
 }
 
 .score,
@@ -36,11 +42,12 @@ canvas {
   box-sizing: border-box;
   padding: 5px;
   margin: 5px;
-  font-size: 25px;
-  color: #ffffff;
+  font-size: 20px;
+  color: #000000;
   font-family: 'Press Start 2P', cursive;
-}
-
-.score {
-  color: #ff0808;
+  text-shadow:
+  -1px -1px 0 #ffc0ed,  
+   1px -1px 0 #a9fffe,
+   -1px 1px 0 #ffc0ed,
+    1px 1px 0 #a9fffe;
 }

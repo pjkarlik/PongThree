@@ -9,10 +9,9 @@ import ypos from '../../resources/images/line/posy.jpg';
 import yneg from '../../resources/images/line/negy.jpg';
 import zpos from '../../resources/images/line/posz.jpg';
 import zneg from '../../resources/images/line/negz.jpg';
-
+// Texture imports //
 import grid from '../../resources/images/grid_trans.png';
-
-
+// Sound imports //
 import beep1 from '../../resources/sound/BEEP1.mp3';
 import beep2 from '../../resources/sound/BEEP2.mp3';
 import beep3 from '../../resources/sound/BEEP3.mp3';
@@ -36,9 +35,12 @@ export default class Render {
     this.strength = 0.85;
     this.radius = 0.75;
     this.display;
+    this.ax = 0;
+    this.ay = 0;
     this.game = {
       balls: 3,
       inPlay: false,
+      autoMode: false,
       hits: 0
     };
     this.box = {
@@ -341,8 +343,10 @@ export default class Render {
     if (this.ball.z < this.box.back && isX && isY ) {
       this.ball.vz = -this.ball.vz; 
       this.ball.z = this.box.back;
-      this.ball.vx = ((player.x - this.ball.x) * 0.12); // ((player.x - this.ball.x) * 0.12);
-      this.ball.vy = ((player.y - this.ball.y) * 0.12);
+      this.ball.vx = !this.game.autoMode ? ((player.x - this.ball.x) * 0.12) :
+        Math.abs(Math.random() * 0.12);
+      this.ball.vy = !this.game.autoMode ? ((player.y - this.ball.y) * 0.12) :
+        Math.abs(Math.random() * 0.12);
       this.assets['beep1'].data.play();
       this.score += 10;
     }
@@ -359,7 +363,6 @@ export default class Render {
       this.assets['beep1'].data.play();
     }
 
-
     this.ball.x += this.ball.vx;
     this.ball.y += this.ball.vy;
     this.ball.z += this.ball.vz;
@@ -375,11 +378,14 @@ export default class Render {
       };
       this.particles.push(trail);
     }
+    if(this.game.autoMode) {
+      this.autoPlay();
+    }
   };
 
   checkparticles() {
     this.particles.forEach((element, index) => {
-      const decay = this.game.inPlay ? 0.00003 : 0.0006;
+      const decay = this.game.inPlay ? 0.00002 : 0.0003;
       element.size -= (element.life * decay);
       element.life++;
       element.ref.scale.x = element.size;
@@ -396,6 +402,7 @@ export default class Render {
   };
 
   movePlayer = (e) => {
+    if (this.game.autoMode) return false;
     const dir = this.camera.position.z;
     let x = dir < 0 ? ((this.width / 2) - e.clientX) * 0.02 : -((this.width / 2) - e.clientX) * 0.02;
     let y = ((this.height / 2) - e.clientY) * 0.02;
@@ -419,6 +426,16 @@ export default class Render {
       this.ball.y = y;
       // this.ball.z = -2.5;
     }
+  };
+
+  autoPlay = () => {
+    const ball = this.ball.ref;
+    // const testPosition = true; // ball.position.z < 0;
+    const newX = ball.position.x;
+    const newY = ball.position.y;
+    this.ax = this.ax - (this.ax - newX) * 0.2;
+    this.ay = this.ay - (this.ay - newY) * 0.2;
+    this.player.position.set(this.ax, this.ay, -3);
   };
 
   updateDisplay = () => {
