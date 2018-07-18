@@ -338,10 +338,11 @@ export default class Render {
     const isX = player.x <= this.ball.x + afd && player.x >= this.ball.x - afd;
     const isY = player.y <= this.ball.y + afd && player.y >= this.ball.y - afd;
 
-    if (this.ball.z < this.box.back + ball.size && isX && isY ) {
-      this.ball.vz = -this.ball.vz;  
-      this.ball.vx = Math.random() * 0.12; // ((player.x - this.ball.x) * 0.61);
-      this.ball.vy = Math.random() * 0.12;
+    if (this.ball.z < this.box.back && isX && isY ) {
+      this.ball.vz = -this.ball.vz; 
+      this.ball.z = this.box.back;
+      this.ball.vx = ((player.x - this.ball.x) * 0.12); // ((player.x - this.ball.x) * 0.12);
+      this.ball.vy = ((player.y - this.ball.y) * 0.12);
       this.assets['beep1'].data.play();
       this.score += 10;
     }
@@ -365,10 +366,10 @@ export default class Render {
 
     ball.ref.position.set(this.ball.x, this.ball.y, this.ball.z);
   
-    if (this.frames % 3 === 0 && this.particles.length < 400 && this.game.inPlay) {
+    if (this.frames % 6 === 0 && this.particles.length < 400 && this.game.inPlay) {
       const baller = this.createBall(this.ball.x, this.ball.y, this.ball.z, 0xFFFFFF);
       const trail = {
-        size: this.ball.size * 2,
+        size: this.ball.size * 2.5,
         life: 0,
         ref: baller
       };
