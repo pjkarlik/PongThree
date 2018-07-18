@@ -443,7 +443,7 @@ export default class Render {
     if (this.frames % 3 === 0) {
       this.updateDisplay();
     }
-    // this.rfrag.uniforms.time.value = this.frames * 0.003;
+    this.rfrag.uniforms.time.value = this.frames * 0.003;
     this.animation = window.requestAnimationFrame(this.renderLoop);
   };
 }
