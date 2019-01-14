@@ -2,7 +2,7 @@
 const fs = require('fs');
 const path = require('path');
 const pkgInfo = require('./package.json');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const DEV_PORT = 2020;
@@ -14,6 +14,7 @@ fs.writeFileSync('version.json', JSON.stringify({ name, version, description, ur
 const config = {
   name: 'PongThree',
   target: 'web',
+  mode: 'development',
   devServer: {
     disableHostCheck: true,
     host: '0.0.0.0',
@@ -57,6 +58,29 @@ const config = {
         ]
       },
       {
+        test: /\.(png|gif|cur|jpg)$/,
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              name: 'images/[name]__[hash:base64:5].[ext]'
+            }
+          },
+          {
+            loader: 'image-webpack-loader',
+            options: {
+              bypassOnDebug: true,
+              optipng: {
+                optimizationLevel: 7
+              },
+              gifsicle: {
+                interlaced: false
+              }
+            }
+          }
+        ]
+      },
+      {
         test: /\.(wav|mp3)$/,
         use: [
           {
@@ -67,41 +91,6 @@ const config = {
           }
         ]
       },
-      {
-        test: /\.(png|gif|cur|jpg)$/,
-        use: [
-          {
-            loader: 'file-loader',
-            options: {
-              name: 'images/[name]__[hash:base64:5].[ext]'
-            }
-          },
-          // {
-          //   loader: 'image-webpack-loader',
-          //   options: {
-          //     bypassOnDebug: true,
-          //     optipng: {
-          //       optimizationLevel: 7
-          //     },
-          //     gifsicle: {
-          //       interlaced: false
-          //     }
-          //   }
-          // }
-        ]
-      },
-      // Font loading if required
-      // {
-      //   test: /\.(woff2|woff|eot|ttf|svg)$/,
-      //   use: [
-      //     {
-      //       loader: 'file-loader',
-      //       options: {
-      //         name: 'fonts/[name]_[hash:base64:5].[ext]'
-      //       }
-      //     }
-      //   ]
-      // },
       {
         test: /\.js$/,
         enforce: 'pre',
@@ -117,8 +106,8 @@ const config = {
     ]
   },
   plugins: [
-    new ExtractTextPlugin({
-      filename: 'styles/[name].[contenthash].css',
+    new MiniCssExtractPlugin({
+      filename: '[name].[contenthash].css',
       allChunks: true
     }),
     new HtmlWebpackPlugin({
